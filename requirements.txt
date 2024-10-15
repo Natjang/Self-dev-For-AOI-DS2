@@ -1,0 +1,13 @@
+pyserial
+pyodbc
+logging
+pymcprotocol
+requests
+pyyaml
+sockets
+xlsxwriter
+websocket
+paho-mqtt
+pythonnet
+numpy
+cryptography
