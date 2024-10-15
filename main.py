@@ -66,15 +66,11 @@ PORT1 = int(machineDetail['PORT_IV3_1'])
 
 
 #HOST3 = "192.168.3.23"  # Standard loopback interface address (localhost) #IV3 #PIN 
-HOST3 = str(machineDetail['HOST_IV3_2'])
-PORT3 = int(machineDetail['PORT_IV3_2'])
+HOST2 = str(machineDetail['HOST_IV3_2'])
+PORT2 = int(machineDetail['PORT_IV3_2'])
 #PORT3 = 8500  # Port to listen on (non-privileged ports are > 1023)
 
 
-#HOST6 = "192.168.3.26"  #Standard loopback interface address (localhost)  #IV2 #Switch
-HOST6 = str(machineDetail['HOST_IV2'])
-PORT6 = int(machineDetail['PORT_IV2'])
-#PORT6 = 8500  # Port to listen on (non-privileged ports are > 1023)
 #------------------------------------------------------------------------------------------
 
 HOST7 = str(machineDetail['HOST_COGNEX_INSIGHT'])
@@ -130,7 +126,8 @@ logging.info("Start")
 broker = machineDetail['MQTT_BROKER']
 port = machineDetail['MQTT_PORT']
 topic = machineDetail['MQTT_TOPIC']
-Scan=0
+
+Step=0
 # generate client ID with pub prefix randomly
 client_id = f'python-mqtt-{random.randint(0, 100)}'
 # username = 'emqx'
@@ -419,184 +416,7 @@ def InSightRead(Host,Port,IV_Function):
         print(f"Received From Insight{data!r}")
         logging.info(f"Received From Insight{data!r}")
         IV_Function.close()
-        return (data)
- 
-
-def IVTrig(Host,Port,IV_Function):
-    Tool_name = IV_Function
-    global SW500
-    global PIN
-    global U509 
-    global U523
-    global A9J3
-    global A9J10
-    global A9J9
-    global SorceIV3_01file
-    global SorceIV3_02file
-    global SorceIV2file
-    global ResponseIV2
-    global ResponseIV3_01
-    global ResponseIV3_02
-    Tool_name = IV_Function
-     
-    print("-----------------------------------------------------------")
-    print("Scan from IV = ",Scan)
-    logging.info("Scan from IV = "+str(Scan))
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as IV_Function:
-            
-
-            IV_Function.connect((Host,Port))
-            IV_Function.sendall(b"T2\r\n")
-            data = IV_Function.recv(1024)
-            print(f"Received {data!r}")
-            logging.info(f"Received {data!r}")
-            print(type(data))
-            logging.info(type(data))  
-            Result = str(data).split(',')
-            print(Result)
-            logging.info(Result)  
-            print(len(Result))
-            logging.info(len(Result))
-            LenghtResult = len(Result)
-            print("Len of result = ",LenghtResult)
-            Tool_number = (LenghtResult/3)-1
-            print ("No of Tool is",int(Tool_number))
-            logging.info("No of Tool is"+str(Tool_number))
-            print("Tool name is",Tool_name)
-            logging.info("Tool name is"+str(Tool_name))
-
-            
-            
-    
-            if (Tool_name == "SW500"):
-                print("SW500 read...")
-                logging.info("SW500 read...")
-                #["b'RT", '00415', 'NG', '01', 'NG', '0000000', '02', 'NG', '0000020', '03', 'NG', '0000027', '04', 'NG', '0000014', '05', 'OK', "0000061\\r'"]
-
-                #for Count in range (1,int(Tool_number)):
-                  #if (Tool_number == 1 ):
-                    #  Tool_RT=Result[2]
-                    # Tool[Count]=Result((3*Count)+1)
-                #print("Summary Result :" + Tool_RT )
-                #print("Result :"+ Tool) 
-
-                if (Tool_number == 2 ):
-                    Tool_RT=Result[2]
-                    Tool1=Result[4]
-                    Tool2=Result[7]
-                    print("Tool_RT" + Tool_RT )
-                    logging.info("Tool_RT" + str(Tool_RT ))
-                    print("SW500 result = " + Tool2)
-                    logging.info("SW500 result = " + str(Tool2)) 
-                    if (Tool_RT=="OK"):
-                        SW500 = 1
-                        client.publish("SW500",str(SW500))
-                    else :
-                        SW500 = 0
-                        client.publish("SW500",str(SW500))
-                        #Log_defect(ModelBarcode,"Part Not Placed (PNP)","SW500")
-
-                    print ("SW500 =",SW500)
-                    logging.info("SW500 ="+str(SW500))
-                    ResponseIV2 =1
-                else :
-                    client.publish("ToolChanged","Tool SW500 ERROR,Please check !!")
-                #ResponseIV2 =1
-
-            if (Tool_name == "PIN"):
-                print("PIN read...")
-                logging.info("PIN read...")
-
-                if (Tool_number == 3):
-                    Tool_RT=Result[2] 
-                    Tool1=Result[4] #A9J3
-                    Tool2=Result[7] #A9J9_A9J10
-                    Tool3=Result[10] #U523
-
-                    print("Tool_RT1=",Tool_RT)
-                    logging.info("Tool_RT1="+str(Tool_RT)) 
-                    #------------------------------------A9J3
-                    if (Tool1 == "OK")  :
-                        A9J3 = 1
-                    else :
-                        A9J3 = 0
-                       
-                    print("A9J3 result = " , A9J3)
-                    logging.info("A9J3 result = " +str(A9J3)) 
-                    client.publish("A9J3",str(A9J3))
-                    #------------------------------------A9J10
-                    if (Tool2 == "OK"):
-                        A9J10= 1
-                    else :
-                        A9J10= 0
-                        
-                    print("A9J10 result = " , A9J10)
-                    logging.info("A9J10 result = " + str(A9J10))
-                    client.publish("A9J10",str(A9J10))
-                    #------------------------------------A9J9
-                    if (Tool2 == "OK"):
-                        A9J9= 1 
-                    else :
-                        A9J9= 0
-                        
-                    print("A9J9 result = ", A9J9) 
-                    logging.info("A9J9 result = "+ str(A9J9)) 
-                    client.publish("A9J9",str(A9J9))
-                    #------------------------------------U509
-
-                    if (Tool3 == "OK"):
-                        U523= 1 
-                    else :
-                        U523= 0
-                        
-                    print("U523 result = ", U523) 
-                    logging.info("U523 result = "+ str(U523))
-                    client.publish("U523",str(U523))
-                    #-----------------------------------------
-                    if (Tool_RT == "OK"):
-                            PIN = int(1)
-                    else :
-                            PIN = int(0)
-
-                            #client.publish("A9J3","NG")TKA054Q
-                            
-                            #client.publish("A9J9","NG")
-                            #client.publish("A9J10","NG")
-                    print ("A9J9_A9J10_A9J3_U523 =",PIN)
-                    logging.info ("A9J9_A9J10_A9J3_U523 ="+ str(PIN))
-                    ResponseIV3_01 =1
-
-                else :
-                    client.publish("ToolChanged","Tool PIN ERROR,Please check !!")
-                
-
-
-            if (Tool_name == "U509"):
-                print("U509 read...")
-                logging.info("U509 read...")
-                print("Tool_number =",str(Tool_number))
-                if (Tool_number == 2 ):
-                    Tool_RT=Result[7]
-        
-                    print("U509 result = ",str(U509))
-                    logging.info("U509 result = "+ str(U509)) 
-                    print("Tool_RT",Tool_RT)
-                    logging.info("Tool_RT"+str(Tool_RT))
-                    if (Tool_RT=="OK"):
-                        U509 =1
-                        client.publish("U509",str(U509))
-                    else :
-                        U509 =0
-                        client.publish("U509",str(U509))
-                        
-                        
-                    print ("U509 =",U509)
-                    logging.info ("U509 ="+ str(U509))
-                    ResponseIV3_02=1
-                else :
-                    client.publish("ToolChanged","Tool U509 ERROR,Please check !!")
-
-            
+        return (data)   
 
 def copy(src_path, dest_path ):
     # Copy the file
@@ -784,37 +604,21 @@ def on_message(client, userdata, msg):
     global ResponseIV3_02
     global ResponseCognex
 
-            
-    client.publish("Press_Capture","START")
-    t = 1
-
-
     if (msg.topic == "imgshow"):
         print("imgshow")
         client.publish("IMG_Cognex",NoderedPath)
-
-
-    if (msg.topic == "python/mqtt"):
-        print("Press_Capture")
-        serial_thread()
-        print("serial_thread>> START")
-
-        print("SCAN =",Scan)
-        if (Scan == 1):
-            IVTrig(HOST1,PORT1,"U509") #IV3 #LCD
-            IVTrig(HOST3,PORT3,"PIN")  #IV3 #PIN
-            IVTrig(HOST6,PORT6,"SW500") #IV2 #SW500
+        
+    if (Step == 1):
             InSightTrig(HOST7,PORT7,"Cognex")
             sleep(3)
-            move_and_rename(ModelBarcode)
             
-             
-        else :
-            print("Not complete scan",Scan)
-            logging.info("Not complete scan "+str(Scan))
-            client.publish("Status_backcheck","Not complete scan")
-
-    if ((msg.topic == "ConfirmFinal")&(ResponseIV2 ==1)&(ResponseIV3_01==1)&(ResponseIV3_02==1)&(ResponseCognex==1)):
+    if (Step == 2):
+            IVTrig(HOST1,PORT1,"Tape") #IV3 #Tape       
+            IVTrig(HOST2,PORT2,"USB") #IV3 #USB
+            Step = 3
+   
+    
+    if ((msg.topic == "ConfirmFinal")&(ResponseIV3_01==1)&(ResponseIV3_02==1)&(ResponseCognex==1)):
   #Check from Node-red Mqtt out after final status
         ConfirmFinal = str(msg.payload.decode("utf-8"))
         print("ConfirmFinal =",ConfirmFinal)
@@ -840,7 +644,7 @@ def on_message(client, userdata, msg):
         print("SerialKey...",SerialKey)
         End_time = Timestamp
         
-        if ((ConfirmFinal=="Finish")&(Scan==1)):
+        if ((ConfirmFinal=="Finish")&(Step==3)):
 
             Timestamp = datetime.now()
             Timestamp = datetime.fromtimestamp(datetime.timestamp(now))
@@ -1013,7 +817,6 @@ def on_message(client, userdata, msg):
         print("")
         sleep(1)
          
-   
         #--------------------------------IV
         client.publish("Final_status","CLR")
         client.publish("ModelBarcode","CLR") 
@@ -1022,7 +825,7 @@ def on_message(client, userdata, msg):
 
         print("CLR Finished !!")
         logging.info("CLR Finished !!")
-        Scan=0
+        Step=0
 
     else:
         print("Not matching condition !!")
@@ -1238,6 +1041,130 @@ def decrypt_message(encrypted_message, key):
     decrypted_message = f.decrypt(encrypted_message)
     return decrypted_message.decode()    
 
+def IVTrig(Host,Port,IV_Function):
+    
+    global SW500
+    global PIN
+    global SorceIV3_01file
+    global SorceIV3_02file
+    global ResponseIV3_01
+    global ResponseIV3_02
+    Tool_name = IV_Function
+     
+    print("-----------------------------------------------------------")
+    print("Step from Cognex = ",Step)
+    logging.info("Step from Cognex = "+ str(Step))
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as IV_Function:
+            
+            IV_Function.connect((Host,Port))
+            IV_Function.sendall(b"T2\r\n")
+            data = IV_Function.recv(1024)
+            print(f"Received {data!r}")
+            logging.info(f"Received {data!r}")
+            print(type(data))
+            logging.info(type(data))  
+            Result = str(data).split(',')
+            print(Result)
+            logging.info(Result)  
+            print(len(Result))
+            logging.info(len(Result))
+            LenghtResult = len(Result)
+            Tool_number = (LenghtResult/3)-1
+            print ("No of Tool is",int(Tool_number))
+            logging.info("No of Tool is"+str(Tool_number))
+            print("Tool name is",Tool_name)
+            logging.info("Tool name is"+str(Tool_name))
+    
+            if (Tool_name == "PIN"):#ยังไม่รู้ tool
+                print("PIN read...")
+                logging.info("PIN read...")
+
+                if (Tool_number == 3):
+                    Tool_RT=Result[2]
+                    Tool1=Result[4]#A9J3
+                    Tool2=Result[7]#A9J3
+                    Tool3=Result[10]
+
+                    print("Tool_RT1=",Tool_RT)
+                    logging.info("Tool_RT1="+str(Tool_RT)) 
+                    #------------------------------------A9J3
+                    if (Tool1 == "OK")  :
+                        A9J3 = 1
+                    else :
+                        A9J3 = 0
+                       
+                    print("A9J3 result = " , A9J3)
+                    logging.info("A9J3 result = " +str(A9J3)) 
+                    client.publish("A9J3",str(A9J3))
+                    #------------------------------------A9J10
+                    if (Tool2 == "OK"):
+                        A9J10= 1
+                    else :
+                        A9J10= 0
+                        
+                    print("A9J10 result = " , A9J10)
+                    logging.info("A9J10 result = " + str(A9J10))
+                    client.publish("A9J10",str(A9J10))
+                    #------------------------------------A9J9
+                    if (Tool2 == "OK"):
+                        A9J9= 1 
+                    else :
+                        A9J9= 0
+                        
+                    print("A9J9 result = ", A9J9) 
+                    logging.info("A9J9 result = "+ str(A9J9)) 
+                    client.publish("A9J9",str(A9J9))
+                    #------------------------------------U509
+
+                    if (Tool3 == "OK"):
+                        U523= 1 
+                    else :
+                        U523= 0
+                        
+                    print("U523 result = ", U523) 
+                    logging.info("U523 result = "+ str(U523))
+                    client.publish("U523",str(U523))
+                    #-----------------------------------------
+                    if (Tool_RT == "OK"):
+                            PIN = int(1)
+                    else :
+                            PIN = int(0)
+
+                            #client.publish("A9J3","NG")TKA054Q
+                            
+                            #client.publish("A9J9","NG")
+                            #client.publish("A9J10","NG")
+                    print ("A9J9_A9J10_A9J3_U523 =",PIN)
+                    logging.info ("A9J9_A9J10_A9J3_U523 ="+ str(PIN))
+                    ResponseIV3_01 =1                               #จบIV3_01
+
+                else :
+                    client.publish("ToolChanged","Tool PIN ERROR,Please check !!")
+                    
+                    
+            if (Tool_name == "U509"):#ยังไม่รู้ tool
+                print("U509 read...")
+                logging.info("U509 read...")
+                if (Tool_number == 2 ):
+                    Tool_RT=Result[7]
+        
+                    print("U509 result = ",str(U509))
+                    logging.info("U509 result = "+ str(U509)) 
+                    print("Tool_RT",Tool_RT)
+                    logging.info("Tool_RT"+str(Tool_RT))
+                    if (Tool_RT=="OK"):
+                        U509 =1
+                        client.publish("U509",str(U509))
+                    else :
+                        U509 =0
+                        client.publish("U509",str(U509))
+                        
+                        
+                    print ("U509 =",U509)
+                    logging.info ("U509 ="+ str(U509))
+                    ResponseIV3_02=1                                #จบIV3_02
+                else :
+                    client.publish("ToolChanged","Tool U509 ERROR,Please check !!")
 
 def Cognex_thread():
    
@@ -1273,19 +1200,18 @@ def Cognex_thread():
     global RTV_C126#30
     global RTV_C132#31
     global RTV_Q103#32
-    global t
     global FinalStatus
     global Result
     global SorceCognexPath
     global SorceCognexfile
     global ResponseCognex
+    global Backchk
     while True:
-        print("Scan from COGNEX = ")
-        logging.info("Scan from COGNEX = ")
         print("Cognex_thread")
         logging.info("Cognex_thread")
-       
-        t = 0 
+        print("Step to COGNEX Ready ")
+        logging.info("Step to COGNEX Ready ")
+    
         result = InSightRead(HOST7,PORT8,"s")
         print("result",type(result))
         logging.info("result"+str(type(result)))
@@ -1296,542 +1222,33 @@ def Cognex_thread():
         result = re.split('.Pass|,| ', result)
         print("result split", (result))   
         logging.info("result split"+str (type (result)))
-        nm = "A6J1"   
+        nm = "ModelBarcode"   
         if (result.index(str(nm)) >= 0):
             n = result.index(str(nm)) 
             print(str(nm),str(n),result[n+2])
             logging.info(str(nm)+str(n)+str(result[n+2]))
-            A6J1 = int(result[n+2])
-            client.publish( nm ,str(result[n+2])) 
-        else:
-            client.publish( nm ,str(0))
-           
-        nm = "A6J2"   
-        if (result.index(str(nm)) >= 0):
-            n = result.index(str(nm)) 
-            print(str(nm),result[n+2])
-            logging.info(str(nm)+str(result[n+2]))
-            A6J2 = int(result[n+2])
-            client.publish( nm ,str(result[n+2]))
-        else:
-            client.publish( nm ,str(0))
-                  
-
-        nm = "R109"   
-        if (result.index(str(nm)) >= 0):
-            n = result.index(str(nm)) 
-            print(str(nm),result[n+2])
-            logging.info(str(nm)+str(result[n+2]))
-            R109 = int(result[n+2])
-            client.publish( nm ,str(result[n+2]))
-        else:
-            client.publish( nm ,str(0))
-           
-
-        nm = "R110"   
-        if (result.index(str(nm)) >= 0):
-            n = result.index(str(nm)) 
-            print(str(nm),result[n+2])
-            logging.info(str(nm)+str(result[n+2]))
-            R110 = int(result[n+2])
-            client.publish( nm ,str(result[n+2]))
-        else:
-            client.publish( nm ,str(0))
-           
-
-        nm = "D100"   
-        if (result.index(str(nm)) >= 0):
-            n = result.index(str(nm))  
-            print(str(nm),result[n+2])
-            logging.info(str(nm)+str(result[n+2]))
-            D100 = int(result[n+2])
-            client.publish( nm ,str(result[n+2]))
-        else:
-            client.publish( nm ,str(0))
-           
-
-        nm = "R101"   
-        if (result.index(str(nm)) >= 0):
-            n = result.index(str(nm)) 
-            print(str(nm),result[n+2])
-            logging.info(str(nm)+str(result[n+2]))
-            R101 = int(result[n+2])
-            client.publish( nm ,str(result[n+2])) 
-        else:
-            client.publish( nm ,str(0))
-            
-
-        nm = "R102"   
-        if (result.index(str(nm)) >= 0):
-            n = result.index(str(nm)) 
-            print(str(nm),result[n+2])
-            logging.info(str(nm)+str(result[n+2]))
-            R102 = int(result[n+2])
-            client.publish( nm ,str(result[n+2])) 
-        else:
-            client.publish( nm ,str(0))
-            
-
-        nm = "R103"   
-        if (result.index(str(nm)) >= 0):
-            n = result.index(str(nm)) 
-            print(str(nm),result[n+2])
-            logging.info(str(nm)+str(result[n+2]))
-            R103 = int(result[n+2])
-            client.publish( nm ,str(result[n+2])) 
-        else:
-            client.publish( nm ,str(0))
-            
-
-        nm = "R207"   
-        if (result.index(str(nm)) >= 0):
-            n = result.index(str(nm)) 
-            print(str(nm),result[n+2])
-            logging.info(str(nm)+str(result[n+2]))
-            R207 = int(result[n+2])
-            client.publish( nm ,str(result[n+2])) 
-        else:
-            client.publish( nm ,str(0))
-            
-
-        nm = "R240"   
-        if (result.index(str(nm)) >= 0):
-            n = result.index(str(nm)) 
-            print(str(nm),result[n+2])
-            logging.info(str(nm)+str(result[n+2]))
-            R240 = int(result[n+2])
-            client.publish( nm ,str(result[n+2])) 
-        else:
-            client.publish( nm ,str(0))
-            
-
-        nm = "T100"   
-        if (result.index(str(nm)) >= 0):
-            n = result.index(str(nm)) 
-            print(str(nm),result[n+2])
-            logging.info(str(nm)+str(result[n+2]))
-            T100 = int(result[n+2])
-            client.publish( nm ,str(result[n+2])) 
-        else:
-            client.publish( nm ,str(0))
-            
-
-        nm = "T102"   
-        if (result.index(str(nm)) >= 0):
-            n = result.index(str(nm)) 
-            print(str(nm),result[n+2])
-            logging.info(str(nm)+str(result[n+2]))
-            T102 = int(result[n+2])
-            client.publish( nm ,str(result[n+2]))  
-        else:
-            client.publish( nm ,str(0))
-            
-
-        nm = "C132"   
-        if (result.index(str(nm)) >= 0):
-            n = result.index(str(nm)) 
-            print(str(nm),result[n+2])
-            logging.info(str(nm)+str(result[n+2]))
-            C132 = int(result[n+2])
-            client.publish( nm ,str(result[n+2])) 
-        else:
-            client.publish( nm ,str(0))
-            
-        nm = "C126"   
-        if (result.index(str(nm)) >= 0):
-            n = result.index(str(nm)) 
-            print(str(nm),result[n+2])
-            logging.info(str(nm)+str(result[n+2]))
-            C126 = int(result[n+2])
-            client.publish( nm ,str(result[n+2]))  
-            
-        else:
-            print('C126 = NG')
-            logging.info('C126 = NG')
-            client.publish( nm ,str(0))
-            print('C126 = NG')
-            logging.info('C126 = NG')
-           
-
-        nm = "A3J7"   
-        if (result.index(str(nm)) >= 0):
-            n = result.index(str(nm))  
-            print(str(nm),result[n+2])
-            logging.info(str(nm)+str(result[n+2]))
-            A3J7 = int(result[n+2])
-            client.publish( nm ,str(result[n+2])) 
-        else:
-            client.publish( nm ,str(0))
-            
-
-        nm = "Q101"   
-        if (result.index(str(nm)) >= 0):
-            n = result.index(str(nm)) 
-            print(str(nm),str (result[n+2]))
-            logging.info(str(nm)+str(result[n+2]))
-            Q101 = int(result[n+2])
-            client.publish( nm ,str(result[n+2]))  
-        else:
-            client.publish( nm ,str(0))
-           
-
-        nm = "Q103"   
-        if (result.index(str(nm)) >= 0):
-            n = result.index(str(nm)) 
-            print(str(nm), (result[n+2]))
-            logging.info(str(nm)+str(result[n+2]))
-            Q103 = int(result[n+2])
-            client.publish( nm ,str(result[n+2])) 
-        else:
-            client.publish( nm ,str(0))
-            
-
-        nm = "Q104"   
-        if (result.index(str(nm)) >= 0):
-            n = result.index(str(nm)) 
-            print(str(nm),result[n+2])
-            logging.info(str(nm)+str(result[n+2]))
-            Q104 = int(result[n+2])
-            client.publish( nm ,str(result[n+2])) 
-        else:
-            client.publish( nm ,str(0))
-            
-
-        nm = "A10J5"   
-        if (result.index(str(nm)) >= 0):
-            n = result.index(str(nm)) 
-            print(str(nm),result[n+2])
-            logging.info(str(nm)+str(result[n+2]))
-            A10J5 = int(result[n+2])
-            client.publish( nm ,str(result[n+2]))     
-        else:
-            client.publish( nm ,str(0))
-            
-
-      
-        nm = "RY100"   
-        if (result.index(str(nm)) >= 0):
-            n = result.index(str(nm)) 
-            print(str(nm),result[n+2])
-            logging.info(str(nm)+str(result[n+2]))
-            RY100 = int(result[n+2])
-            client.publish( nm ,str(result[n+2]))  
-        else:
-            client.publish( nm ,str(0))
-           
-
-        nm = "L101"   
-        if (result.index(str(nm)) >= 0):
-            n = result.index(str(nm)) 
-            print(str(nm),result[n+2])
-            logging.info(str(nm)+str(result[n+2]))
-            L101 = int(result[n+2])
-            client.publish( nm ,str(result[n+2])) 
-        else:
-            client.publish( nm ,str(0))
-            
-        nm = "T103"   
-        if (result.index(str(nm)) >= 0):
-            n = result.index(str(nm)) 
-            print(str(nm),result[n+2])
-            logging.info(str(nm)+str(result[n+2]))
-            T103 = int(result[n+2])
-            client.publish( nm ,str(result[n+2])) 
-        else:
-            client.publish( nm ,str(0))
-            
-
-        nm = "T105"   
-        if (result.index(str(nm)) >= 0):
-            n = result.index(str(nm)) 
-            print(str(nm),result[n+2])
-            logging.info(str(nm)+str(result[n+2]))
-            T105 = int(result[n+2])
-            client.publish( nm ,str(result[n+2])) 
-        else:
-            client.publish( nm ,str(0))
-           
-
-        nm = "T101"    
-        if (result.index(str(nm)) >= 0):
-            n = result.index(str(nm)) 
-            print(str(nm),result[n+2])
-            logging.info(str(nm)+str(result[n+2]))
-            T101 = int(result[n+2])
-            client.publish( nm ,str(result[n+2])) 
-        else:
-            client.publish( nm ,str(0))
-           
-
-        nm = "R105"   
-        if (result.index(str(nm)) >= 0):
-            n = result.index(str(nm)) 
-            print(str(nm),result[n+2])
-            logging.info(str(nm)+str(result[n+2]))
-            R105 = int(result[n+2])
-            client.publish( nm ,str(result[n+2]))   
-        else:
-            client.publish( nm ,str(0))
-           
-
-        nm = "R106"   
-        if (result.index(str(nm)) >= 0):
-            n = result.index(str(nm)) 
-            print(str(nm),result[n+2])
-            logging.info(str(nm)+str(result[n+2]))
-            R106 = int(result[n+2])
-            client.publish( nm ,str(result[n+2])) 
-        else:
-            client.publish( nm ,str(0))
-           
-
-        nm = "R107"   
-        if (result.index(str(nm)) >= 0):
-            n = result.index(str(nm)) 
-            print(str(nm),result[n+2])
-            logging.info(str(nm)+str(result[n+2]))
-            R107 = int(result[n+2])
-            client.publish( nm ,str(result[n+2]))  
-        else:
-            client.publish( nm ,str(0))
-            
-
-        nm = "R108"   
-        if (result.index(str(nm)) >= 0):
-            n = result.index(str(nm))  
-            print(str(nm),result[n+2])
-            logging.info(str(nm)+str(result[n+2]))
-            R108 = int(result[n+2])
-            client.publish( nm ,str(result[n+2]))  
-        else:
-            client.publish( nm ,str(0))
-            
-
-
-        nm = "PCB"   
-        if (result.index(str(nm)) >= 0):
-            n = result.index(str(nm)) 
-            print(str(nm),result[n+2])
-            logging.info(str(nm)+str(result[n+2]))
-            PCB = int(result[n+2])
-            client.publish( nm ,str(result[n+2]))  
-        else:
-            client.publish( nm ,str(0))
-            
-
-        nm = "RTV_C126"   
-        if (result.index(str(nm)) >= 0):
-            n = result.index(str(nm)) 
-            print(str(nm),result[n+2])
-            logging.info(str(nm)+str(result[n+2]))
-            RTV_C126 = int(result[n+2])
-            client.publish( nm ,str(result[n+2]))   
-        else:
-            client.publish( nm ,str(0))
-           
-
-        nm = "RTV_C132"   
-        if (result.index(str(nm)) >= 0):
-            n = result.index(str(nm)) 
-            print(str(nm),result[n+2])
-            logging.info(str(nm)+str(result[n+2]))
-            RTV_C132 = int(result[n+2])
-            client.publish( nm ,str(result[n+2]))   
-        else:
-            client.publish( nm ,str(0))
-            
-
-
-        nm = "RTV_Q103"   
-        if (result.index(str(nm)) >= 0):
-            n = result.index(str(nm)) 
-            print(str(nm),result[n+2])
-            logging.info(str(nm)+str(result[n+2]))
-            RTV_Q103 = int(result[n+2])
-            client.publish( nm ,str(result[n+2]))  
-        else:
-            client.publish( nm ,str(0))
-
-
-        nm = "Image"   
-        if (result.index(str(nm)) >= 0):
-            n = result.index(str(nm))
-            print(str(nm),result[n+1])
-            logging.info(str(nm)+str(result[n+1]))
-
-        SorceCognexPath = 'C:\Capture_Cognex'+'\\'+str(result[n+1])+'.jpg'
-        SorceCognexfile = str(result[n+1])+'.jpg'
-        print("Image path =",SorceCognexPath)
-        print("length =",len(SorceCognexPath))
+            ModelBarcode = str(result[n+2])
+            logging.info("Start read Barcode_>>"+str(ModelBarcode)) 
+            print ("Barcode_>> " ,ModelBarcode) 
+            print("Barcode len= ", len(ModelBarcode ))
+            print("Step======",Step)     
+            client.publish( nm ,str(ModelBarcode))
         
-        
+            if (len(ModelBarcode) != 9):
+                print("Error read Serial no", ModelBarcode)
+                client.publish( nm ,str(ModelBarcode))
+                sleep(0.3)
 
-            #---------------------------------------------------------------------------------------------------------------------------------------
-        
-        print ("A6J1 =",A6J1)
-        logging.info("A6J1 ="+str(A6J1))
-        print ("A6J2 =",A6J2)
-        logging.info("A6J2 ="+str(A6J2))
-        print ("R109 =",R109)
-        logging.info("R109 ="+str(R109))
-        print ("R110 =",R110)
-        logging.info("R110 ="+str(R110))
-        print ("D100 =",str(D100))
-        logging.info("D100 ="+str(D100))
-        print ("R101 =",str(R101))
-        logging.info("R101 ="+str(R101))
-        print ("R102 =",str(R102))
-        logging.info("R102 ="+str(R102))
-        print ("R103 =",R103)
-        logging.info("R103 ="+str(R103))
-        print ("R207 =",R207)
-        logging.info("R207 ="+str(R207))
-        print ("R240 =",R240)
-        logging.info("R240 ="+str(R240))
-        print ("T100 =",T100)
-        logging.info("T100 ="+str(T100))
-        print ("T102 =",T102)
-        logging.info("T102 ="+str(T102))
-        print ("C132 =",C132)
-        logging.info("C132 ="+str(C132))
-        print ("C126 =",C126)
-        logging.info("C126 ="+str(C126))
-        print ("A3J7 =",A3J7)
-        logging.info("A3J7 ="+str(A3J7))
-        print ("Q101 =",Q101)
-        logging.info("Q101 ="+str(Q101))
-        print ("Q103 ="+str(Q103))
-        logging.info("Q103 ="+str(Q103))
-        print ("Q104 ="+str(Q104))
-        logging.info("Q104 ="+str(Q104))
-        print ("A10J5 ="+str(A10J5))
-        logging.info("A10J5 ="+str(A10J5))
-        print ("RY100 =",RY100)
-        logging.info("RY100 ="+str(RY100))
-        print ("L101 =",L101)
-        logging.info("L101 ="+str(L101))
-        print ("T103 =",T103)
-        logging.info("T103 ="+str(T103))
-        print ("T105 =",T105)
-        logging.info("T105 ="+str(T105))
-        print ("T101 =",T101)
-        logging.info("T101 ="+str(T101))
-        print ("R105 =",R105)
-        logging.info("R105 ="+str(R105))
-        print ("R106 =",R106)
-        logging.info("R106 ="+str(R106))
-        print ("R107 =",R107)
-        logging.info("R107 ="+str(R107))
-        print ("R108 =",R108)
-        logging.info("R108 ="+str(R108))
-        print ("D100 =",PCB)
-        logging.info("D100 ="+str(PCB))
-        print ("R106 =",RTV_C126)
-        logging.info("R106 ="+str(RTV_C126))
-        print ("Q101 =",RTV_C132)
-        logging.info("Q101 ="+str(RTV_C132))
-        print ("R101 =",RTV_Q103)
-        logging.info("R101 ="+str(RTV_Q103))
-        ResponseCognex=1
+            elif (len(ModelBarcode) == 9):  #Check อีกทีว่า code ยาวเท่าไร
+                print("Complete read Serial no", ModelBarcode)
+                print("Barcode len= ", len(ModelBarcode ))
 
-        #---------------------------------------------------------------------------------------------------------------------------------------
-
-        if ((A6J1 == 1)&(A6J2 == 1)&(R109 == 1)&(R110 == 1)&(D100 == 1)&(R101 == 1)&(R102 == 1)&(R103 == 1)&(R207 == 1)&(R240 == 1)
-            &(T100 == 1)&(T102 == 1)&(C132 == 1)&(C126 == 1)&(A3J7 == 1)&(Q101 == 1)&(Q103 == 1)&(Q104 == 1)&(A10J5 == 1)&(A9J3 == 1)
-            &(U509 == 1)&(U523 == 1)&(SW500 == 1)&(RY100 == 1)&(L101 == 1)&(T103 == 1)&(T105 == 1)&(T101 == 1)&(R105 == 1)&(R106 == 1)
-            &(R107 == 1)&(R108 == 1)&(A9J9 == 1)&(A9J10 == 1)&(PCB == 1)&(RTV_C126 == 1)&(RTV_C132 == 1)&(RTV_Q103 == 1)):
-            
-            client.publish("Final_status",str(1))   
-            FinalStatus = "OK"
-            Result = 1
-            print("Final_status",str(1))           
-            logging.info("Update OK complete ")
-            #sleep(5)
-            #--------------------------------IV/COGNEX
-            
-        else:
-            client.publish("Final_status",str(0))   
-            print("Final_status",str(0)) 
-            FinalStatus = "NG"
-            Result = 0
-            logging.info("Update NG complete ")
-
-def mqtt_thread():
-    client.on_connect = on_connect
-    client.on_message = on_message
-    client.connect("127.0.0.1", 1883, 60)
-    client.loop_forever()
-
-def serial_thread():
-
-    global Barcode
-    global Backchk
-    global Start_time
-    global End_time
-    global Status_board
-    global Capture_press
-    global ModelBarcode
-    global Timestamp 
-    global StationID
-    global Scan
-    print("try")    
-
-    try: 
-        print("A ") 
-
-    #Step8 
-        if ser.isOpen():
-            print("Serial_port com is opened")
-            logging.info("Serial_port com is opened")
-            
-            print("Serial com is trig")
-            logging.info("Serial com is trig")
-            sleep(0.5)
-            v_text = "LON\r\n"
-            ser.write(v_text.encode())
-            sleep(0.5)
-            #print("Barcode : " + str(Barcode) + " Result : " + str(Result) + " SerialKey : " + str(SerialKey) + "topics_name : " + str(topics_name))
-                
-            if ser.inWaiting() > 0:
-                Barcode = ser.read(ser.inWaiting()).decode("utf-8")
-                print (">> " ,len(Barcode))
-                logging.info (">> " +str(len(Barcode)))
-                print ("Barcode>> " ,Barcode)
-                logging.info ("Barcode>> " +str(Barcode))
-                #ModelBarcode = BarcodeSplit[0].split("\r")[0]
-            
-                ModelBarcode = Barcode.strip()
-                print (">> " ,len(ModelBarcode))    
-                logging.info (">> " +str(len(ModelBarcode)))
-                print ("ModelBarcode",ModelBarcode)
-                logging.info ("ModelBarcode"+str(ModelBarcode))
-                print("Type",(type(ModelBarcode)))
-                logging.info ("Type"+str((type(ModelBarcode))))
-                #ModelBarcode='TKA0049'
-                #*****************Test
-                Start_time = datetime.now()
-                Start_time = datetime.fromtimestamp(datetime.timestamp(Start_time))
-                Start_time = Start_time.strftime("%Y-%m-%d %H:%M:%S")
-                print("Start time >> ", Start_time)
-                logging.info("Start time >> "+ Start_time)
-
-                client.publish("ModelBarcode",str(ModelBarcode)) 
-                logging.info("ModelBarcode  = "+ str(ModelBarcode)) 
-                print ("ModelBarcode",ModelBarcode)
-                ser.flushOutput
-                
-                #---------------------------------------------------------------
                 Status_board = Treacibility_backcheck_data(ModelBarcode)
                 print ("Status_board =",Status_board)
                 logging.info ("Status_board ="+Status_board)
-                print ('Len barcode', len(ModelBarcode))
-                #--------------------------------------------------------------
-
-                if (len(ModelBarcode)==7):
-                    print ("ModelBarcode",ModelBarcode) 
-                    logging.info ("ModelBarcode"+str(ModelBarcode) )
                 
-                    if ((str(Status_board).find('Final')>0)|(ModelBarcode=='TKA001A')|(ModelBarcode=='TKA0049')):#|(ModelBarcode=='TKA0011')| (ModelBarcode=='TKA003T'):
+                
+                if ((str(Status_board).find('Final')>0)|(ModelBarcode=='TKA001A')|(ModelBarcode=='TKA0049')):#|(ModelBarcode=='TKA0011')| (ModelBarcode=='TKA003T'):
 
                         if ((ModelBarcode=='TKA001A')|(ModelBarcode=='TKA0049')):#|(Barcode=='230802636'): #| (str(Status_board).find('Scrapped')>0):#232605881232605881
                             Backchk = 0
@@ -1847,7 +1264,6 @@ def serial_thread():
                         else:
                             print("Backchk not Matching")
 
-                        ser.flushInput()
                         Start_time = datetime.now()
                         Start_time = datetime.fromtimestamp(datetime.timestamp(Start_time))
                         Start_time = Start_time.strftime("%Y-%m-%d %H:%M:%S")
@@ -1857,38 +1273,218 @@ def serial_thread():
                         print (">>Status_board "+Status_board)
                         logging.info("Status_board  = "+ Status_board) 
                         
-                        client.publish("ModelBarcode",str(ModelBarcode)) 
-                        logging.info("ModelBarcode  = "+ str(ModelBarcode)) 
-                        print ("ModelBarcode",ModelBarcode)
-                        client.publish("Insert","CLR")
-                        ser.flushOutput
-                        Scan = 1
-                        
-                    else :
-                        client.publish("Status_board","Process skipped !!"+ Status_board)
-                        client.publish("Status_backcheck","Process skipped !!"+ Status_board)
-
-                        print ("Status_backcheck >> Not complete")    
-                        logging.warning("Process skipped !!") 
-                        Scan = 0
+                        Step = 2
                             
-                else:
-                    print("Not matching length!!")
+                else :
+                            client.publish("Status_board","Process skipped !!"+ Status_board)
+                            client.publish("Status_backcheck","Process skipped !!"+ Status_board)
+                            print ("Status_backcheck >> Not complete")    
+                            logging.warning("Process skipped !!") 
+                            Step = 0 
+                          
+        else:
+            client.publish( nm ,"Read fail")
+            
+        #----------------------------ตัวอื่นๆ    
+        if (Step == 2):
+                
+            nm = "A6J2"   
+            if (result.index(str(nm)) >= 0):
+                n = result.index(str(nm)) 
+                print(str(nm),result[n+2])
+                logging.info(str(nm)+str(result[n+2]))
+                A6J2 = int(result[n+2])
+                client.publish( nm ,str(result[n+2]))
             else:
-                    print(">> sError to read barcode")        
+                client.publish( nm ,str(0))
                     
-                    
-                    
-                    
-    except  Serial.SerialException as error:
-            print("Failed  {}".format(error))
-             
-chk_timestamp()
+
+            nm = "Image"   
+            if (result.index(str(nm)) >= 0):
+                n = result.index(str(nm))
+                print(str(nm),result[n+1])
+                logging.info(str(nm)+str(result[n+1]))
+
+            SorceCognexPath = 'C:\Capture_Cognex'+'\\'+str(result[n+1])+'.jpg'
+            SorceCognexfile = str(result[n+1])+'.jpg'
+            print("Image path =",SorceCognexPath)
+            print("length =",len(SorceCognexPath))
+            
+            #---------------------------------------------------------------------------------------------------------------------------------------
+            
+            print ("A6J1 =",A6J1)
+            logging.info("A6J1 ="+str(A6J1))
+            print ("A6J2 =",A6J2)
+            logging.info("A6J2 ="+str(A6J2))
+            print ("R109 =",R109)
+            logging.info("R109 ="+str(R109))
+            print ("R110 =",R110)
+            logging.info("R110 ="+str(R110))
+            print ("D100 =",str(D100))
+            logging.info("D100 ="+str(D100))
+            print ("R101 =",str(R101))
+            logging.info("R101 ="+str(R101))
+            print ("R102 =",str(R102))
+            logging.info("R102 ="+str(R102))
+            print ("R103 =",R103)
+            logging.info("R103 ="+str(R103))
+            print ("R207 =",R207)
+            logging.info("R207 ="+str(R207))
+            print ("R240 =",R240)
+            logging.info("R240 ="+str(R240))
+            print ("T100 =",T100)
+            logging.info("T100 ="+str(T100))
+            print ("T102 =",T102)
+            logging.info("T102 ="+str(T102))
+            print ("C132 =",C132)
+            logging.info("C132 ="+str(C132))
+            print ("C126 =",C126)
+            logging.info("C126 ="+str(C126))
+            print ("A3J7 =",A3J7)
+            logging.info("A3J7 ="+str(A3J7))
+            print ("Q101 =",Q101)
+            logging.info("Q101 ="+str(Q101))
+            print ("Q103 ="+str(Q103))
+            logging.info("Q103 ="+str(Q103))
+            print ("Q104 ="+str(Q104))
+            logging.info("Q104 ="+str(Q104))
+            print ("A10J5 ="+str(A10J5))
+            logging.info("A10J5 ="+str(A10J5))
+            print ("RY100 =",RY100)
+            logging.info("RY100 ="+str(RY100))
+            print ("L101 =",L101)
+            logging.info("L101 ="+str(L101))
+            print ("T103 =",T103)
+            logging.info("T103 ="+str(T103))
+            print ("T105 =",T105)
+            logging.info("T105 ="+str(T105))
+            print ("T101 =",T101)
+            logging.info("T101 ="+str(T101))
+            print ("R105 =",R105)
+            logging.info("R105 ="+str(R105))
+            print ("R106 =",R106)
+            logging.info("R106 ="+str(R106))
+            print ("R107 =",R107)
+            logging.info("R107 ="+str(R107))
+            print ("R108 =",R108)
+            logging.info("R108 ="+str(R108))
+            print ("D100 =",PCB)
+            logging.info("D100 ="+str(PCB))
+            print ("R106 =",RTV_C126)
+            logging.info("R106 ="+str(RTV_C126))
+            print ("Q101 =",RTV_C132)
+            logging.info("Q101 ="+str(RTV_C132))
+            print ("R101 =",RTV_Q103)
+            logging.info("R101 ="+str(RTV_Q103))
+            ResponseCognex=1
+
+        #---------------------------------------------------------------------------------------------------------------------------------------
+
+            if ((A6J1 == 1)&(A6J2 == 1)&(R109 == 1)&(R110 == 1)&(D100 == 1)&(R101 == 1)&(R102 == 1)&(R103 == 1)&(R207 == 1)&(R240 == 1)
+                &(T100 == 1)&(T102 == 1)&(C132 == 1)&(C126 == 1)&(A3J7 == 1)&(Q101 == 1)&(Q103 == 1)&(Q104 == 1)&(A10J5 == 1)&(A9J3 == 1)
+                &(U509 == 1)&(U523 == 1)&(SW500 == 1)&(RY100 == 1)&(L101 == 1)&(T103 == 1)&(T105 == 1)&(T101 == 1)&(R105 == 1)&(R106 == 1)
+                &(R107 == 1)&(R108 == 1)&(A9J9 == 1)&(A9J10 == 1)&(PCB == 1)&(RTV_C126 == 1)&(RTV_C132 == 1)&(RTV_Q103 == 1)): #รอดู toolว่ามีอะไรบ้าง
+                
+                client.publish("Final_status",str(1))   
+                FinalStatus = "OK"
+                Result = 1
+                print("Final_status",str(1))           
+                logging.info("Update OK complete ")
+                #sleep(5)
+                #--------------------------------IV/COGNEX
+                
+            else:
+                client.publish("Final_status",str(0))   
+                print("Final_status",str(0)) 
+                FinalStatus = "NG"
+                Result = 0
+                logging.info("Update NG complete ")
+
+def mqtt_thread():
+    client.on_connect = on_connect
+    client.on_message = on_message
+    client.connect("127.0.0.1", 1883, 60)
+    client.loop_forever()
+
+def establish_connection(): #ConnectWith PLC
+    pymc3e = pymcprotocol.Type3E()
+    pymc3e.setaccessopt(commtype="binary")
+    pymc3e.connect(ip="192.168.3.100", port=8000) ##########ต้องมาแก้ทีหลัง
+    return pymc3e
+
+def check_connection(pymc3e): #Check connection with PLC
+    while True:
+        try:
+            if pymc3e._is_connected:
+                cpu_type, cpu_code = pymc3e.read_cputype()
+                current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                print(f"Checked at: {current_time} - CPU Type: {cpu_type}, CPU Code: {cpu_code}")
+                #stepwork_logger.info(f"Checked at: {current_time} - CPU Type: {cpu_type}, CPU Code: {cpu_code}")
+            else:
+                current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                print("Connection failed.")
+                logging.warning(f"{current_time} - Connection failed.")
+
+            sleep(60) 
+
+        except Exception as e:
+            current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            print(f"Error: {e}")
+            logging.warning(f"{current_time} - Error: {e}")
+            
+def PLC_thread():
+    
+    global CombineTimeBarcode
+    global timestampBarcode
+    global Start_time
+    global Barcode
+    global Backchk
+    
+    pymc3e = establish_connection() #รอดูIP PLC อีกที
+    try:
+        check_thread = threading.Thread(target=check_connection, args=(pymc3e,)) #
+        check_thread.start() 
+        read_M200_value(pymc3e)  #read sensor ready delay3 sec
+        #test_result_CIRA(pymc3e)               
+    except KeyboardInterrupt:
+        print("Interrupted by user")
+
+def read_M200_value(pymc3e):
+    global ModelBarcode
+    global Barcode
+    global Step
+
+    while True:
+        try:
+            if (pymc3e._is_connected):
+        
+                value_M200 = pymc3e.batchread_bitunits(headdevice="M200", readsize=1)  #read from sensor
+                #print("value_M200", value_M200)
+                sleep(0.5)
+
+                if (value_M200[0] == 1):
+                    Step = 1
+                    sleep(0.5)
+
+            else:
+                current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                print(f"{current_time} - Connection to FX5U-32MT/ES failed.")
+                logging.warning(f"{current_time} - Connection to FX5U-32MT/ES failed.")
+
+        except Exception as e:
+            current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            print(f"{current_time} - Error: {e}")
+            logging.warning(f"{current_time} - Error: {e}")
+
+#----------------------------------------------------------------------
 mqtt_thread = threading.Thread(target=mqtt_thread)
+PLC_thread = threading.Thread(target=PLC_thread) 
+Cognex_thread = threading.Thread(target=Cognex_thread)
+scada_monitor = threading.Thread(target=scada_monitor) 
+#----------------------------------------------------------------------
 mqtt_thread.start()
-Cognex_thread = threading.Thread(target=Cognex_thread) 
+PLC_thread.start()
 Cognex_thread.start()
-scada_monitor = threading.Thread(target=scada_monitor)
 scada_monitor.start()
 sleep(3)
 
@@ -1896,7 +1492,6 @@ if __name__ == '__main__':
     
     print("Vision Start process...") 
     logging.info("Vision Start process...") 
-    sleep(1)
     client.publish("Python","RUNNING")
     print("START1")
     
